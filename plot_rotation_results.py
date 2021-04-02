@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt  # type: ignore
 
-runs = 25
-save_tag = '033021'
-for run_loop in range(0, runs):
+runs = 20
+save_tag = '033121'
+for run_loop in range(7, 9):
     Val_data = np.loadtxt('rotation_results/Val_energy_' + save_tag + '_' + str(run_loop) + '.txt')
 
     for rot_loop in range(0, 3):
@@ -27,42 +27,38 @@ for run_loop in range(0, runs):
             psi = int(psi / 5) + 36
             phi_psi_60[psi, phi] = data_60[i, 3]
 
-        fig = plt.figure(figsize=(10, 8))
-        ax = fig.add_subplot(111)
-        ax.set_aspect('equal', adjustable='box')
+        # fig = plt.figure(figsize=(10, 8))
+        # ax = fig.add_subplot(111)
+        # ax.set_aspect('equal', adjustable='box')
 
-        i2 = plt.imshow(phi_psi_60, origin='lower', cmap='viridis_r')
-        plt.colorbar()
+        # i2 = plt.imshow(phi_psi_60, origin='lower', cmap='viridis_r')
+        # plt.colorbar()
 
-        plt.clim(0, 1)
-        plt.close()
+        # plt.clim(0, 1)
+        # plt.show()
 
 
-        P = np.exp(-1.0 * phi_psi_60 / 0.01)
-        fig = plt.figure(figsize=(10, 8))
-        ax = fig.add_subplot(111)
-        ax.set_aspect('equal', adjustable='box')
+        # P = np.exp(-1.0 * phi_psi_60 / 0.01)
+        # fig = plt.figure(figsize=(10, 8))
+        # ax = fig.add_subplot(111)
+        # ax.set_aspect('equal', adjustable='box')
 
-        i2 = plt.imshow(P / np.sum(P), origin='lower', cmap='viridis')
+        # i2 = plt.imshow(P / np.sum(P), origin='lower', cmap='viridis')
 
-        plt.colorbar()
-        plt.close()
-        np.savetxt('rotation_results/Val_steric' + save_tag, P)
+        # plt.colorbar()
+        # plt.show()
+        # np.savetxt('rotation_results/Val_steric' + save_tag + '_P.txt', P)
         np.savetxt('rotation_results/Val_rotamer_energy_chi' + str(int(this_chi)) + '_' + save_tag + '_' + str(run_loop) + '.txt', phi_psi_60)
 
     Val_60 = np.loadtxt('rotation_results/Val_rotamer_energy_chi60_' + save_tag + '_' + str(run_loop) + '.txt')
     Val_180 = np.loadtxt('rotation_results/Val_rotamer_energy_chi180_' + save_tag + '_' + str(run_loop) + '.txt')
     Val_300 = np.loadtxt('rotation_results/Val_rotamer_energy_chi300_' + save_tag + '_' + str(run_loop) + '.txt')
     print(run_loop)
-    print(Val_60[60, 25])
-    print(Val_180[60, 25])
-    print(Val_300[60, 25])
+
 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111)
     ax.set_aspect('equal', adjustable='box')
-    # ind0 = Val_60 == 0
-    # Val_60[ind0] = 'nan'
 
     i2 = plt.imshow(Val_60, origin='lower', cmap='Blues')
     plt.colorbar()
@@ -79,13 +75,22 @@ for run_loop in range(0, runs):
     plt.close()
 
     for i in range(0, 72):
+        
         for j in range(0, 72):
-            if (Val_60[i, j] < Val_180[i, j] and Val_60[i, j] < Val_300[i, j]):
+
+            if (Val_60[i, j] == Val_180[i, j] and Val_60[i, j] < Val_300[i, j]):
+                A = np.exp(-1.0 * (Val_180[i, j] - Val_60[i, j]) / 0.01)
+                B = np.exp(-1.0 * (Val_300[i, j] - Val_60[i, j]) / 0.01)
+                sum1 = A + B + 1
+                Val_60[i, j] = 1 / sum1
+                Val_180[i, j] = A / sum1
+                Val_300[i, j] = B / sum1
+
+            elif (Val_60[i, j] < Val_180[i, j] and Val_60[i, j] < Val_300[i, j]):
                 A = np.exp(-1.0 * (Val_180[i, j] - Val_60[i, j]) / 0.01)
                 B = np.exp(-1.0 * (Val_300[i, j] - Val_60[i, j]) / 0.01)
 
                 sum1 = A + B + 1
-            
                 Val_60[i, j] = 1 / sum1
                 Val_180[i, j] = A / sum1
                 Val_300[i, j] = B / sum1

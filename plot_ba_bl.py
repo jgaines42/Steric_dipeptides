@@ -30,28 +30,38 @@ all_bonds = np.loadtxt('MD_data/all_bonds.txt')
 # bins1 = np.arange(0.9, 1.7, 0.01)
 # bins_H = np.arange(0.99, 1.15, 0.001)
 
-# bond_length_means = np.zeros([all_bonds.shape[0], 4])
-# for i in range(0, all_bonds.shape[0]):
-#     bond_length_means[i, 0] = np.mean(all_bonds[i, :])
-#     bond_length_means[i, 1] = np.std(all_bonds[i, :])
-#     bond_length_means[i, 2] = np.min(all_bonds[i, :])
-#     bond_length_means[i, 3] = np.max(all_bonds[i, :])
-# np.savetxt('MD_data/bond_length_means.txt', bond_length_means, fmt='%6.4f')
+bond_length_means = np.zeros([all_bonds.shape[0], 4])
+for i in range(0, all_bonds.shape[0]):
+    bond_length_means[i, 0] = np.mean(all_bonds[i, :])
+    bond_length_means[i, 1] = np.std(all_bonds[i, :])
+    bond_length_means[i, 2] = np.min(all_bonds[i, :])
+    bond_length_means[i, 3] = np.max(all_bonds[i, :])
+np.savetxt('MD_data/bond_length_means.txt', bond_length_means, fmt='%6.4f')
+ind0 = bond_length_means[:, 0] > 0.9
+sub_means = bond_length_means[ind0,:]
+plt.errorbar(np.arange(0, sub_means.shape[0]), sub_means[:, 0], yerr=sub_means[:, 1],  fmt='o')
+plt.show()
 
-all_angles = np.loadtxt('MD_data/all_angles.txt')
-
+#all_angles = np.loadtxt('MD_data/all_angles.txt')
+all_angles = np.loadtxt('../Dun_coordinates/all_angles.txt')
 bond_angle_means = np.zeros([all_angles.shape[0], 4])
 for i in range(0, all_angles.shape[0]):
     bond_angle_means[i, 0] = np.mean(all_angles[i, :])
     bond_angle_means[i, 1] = np.std(all_angles[i, :])
     bond_angle_means[i, 2] = np.min(all_angles[i, :])
     bond_angle_means[i, 3] = np.max(all_angles[i, :])
-# np.savetxt('MD_data/bond_angle_means.txt', bond_angle_means, fmt='%5.2f')
+np.savetxt('../Dun_coordinates/bond_angle_means.txt', bond_angle_means, fmt='%5.2f')
 
+ind0 = bond_angle_means[:, 0] > 100
+sub_means = bond_angle_means[ind0,:]
+plt.errorbar(np.arange(0, sub_means.shape[0]), sub_means[:, 0], yerr=sub_means[:, 1],  fmt='o')
+for i in range(0, sub_means.shape[0]):
+    plt.plot([i + 1.3, i + 1.3], [100, 130], 'k')
+plt.show()
 # fig1, ax1 = plt.subplots()
 # ax1.boxplot(all_angles.T)
 # plt.show()
-
+asdf
 # for i in range(4, 5):
 #     plt.hist(all_angles[i, :], 30)
 # plt.show()
@@ -92,15 +102,16 @@ max_allowed = bond_angle_means[:, 0] + 3 * bond_angle_means[:, 1]
 for loop_angle in range(0, 6):
     f, axs = plt.subplots(1, 8, sharey=True)
     for i in range(0, 8):
-        #vert_hist = np.histogram(all_angles[i,:], bins=100)
-        #axs[i].hist(all_angles[i + (loop_angle * 8), :], bins=100, orientation="horizontal")
-        #axs[i].set_title(Atoms[angle_list[i + (loop_angle * 8), 0]] + '-' + Atoms[angle_list[i + (loop_angle * 8), 1]] + '-' + Atoms[angle_list[i + (loop_angle * 8), 2]])
-        for j in range(0, 100):
-            #axs[i].plot([0, 40000], [all_angles[i + (loop_angle * 8), j], all_angles[i + (loop_angle * 8), j]], label=str(j))
-            if (all_angles[i + (loop_angle * 8), j] < min_allowed[i + loop_angle * 8] or all_angles[i + (loop_angle * 8), j] > max_allowed[i + loop_angle * 8]):
-                print('sample ' + str(j) + ' angle ' + str(i + (loop_angle * 8)))
+        if (bond_angle_means[i + (loop_angle * 8), 0] > 90):
+            #vert_hist = np.histogram(all_angles[i,:], bins=100)
+            axs[i].hist(all_angles[i + (loop_angle * 8), :], bins=100, orientation="horizontal")
+            axs[i].set_title(Atoms[angle_list[i + (loop_angle * 8), 0]] + '-' + Atoms[angle_list[i + (loop_angle * 8), 1]] + '-' + Atoms[angle_list[i + (loop_angle * 8), 2]])
+            # for j in range(0, 10):
+            #     axs[i].plot([0, 40000], [all_angles[i + (loop_angle * 8), j], all_angles[i + (loop_angle * 8), j]], label=str(j))
+            #     if (all_angles[i + (loop_angle * 8), j] < min_allowed[i + loop_angle * 8] or all_angles[i + (loop_angle * 8), j] > max_allowed[i + loop_angle * 8]):
+            #         print('sample ' + str(j) + ' angle ' + str(i + (loop_angle * 8)))
     #axs[7].legend()
-    #plt.show()
+    plt.show()
 
 # h_bonding = [0, 1, 2, 6, 8, 11, 14, 15, 16, 15, 18, 19, 22, 24, 25, 26]
 # fig, axs = plt.subplots(1, 1, sharey=True, tight_layout=True)

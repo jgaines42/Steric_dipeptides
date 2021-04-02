@@ -34,6 +34,7 @@ def rotate_CH3(Position, delta_term_CH3_1, delta_term_CH3_2, CH3_1_index, CH3_2_
     # Target E is the energy if there were no CH3 clashes 
     target_E = min_E - CH3_E
     total_E = min_E
+    min_Position = Pos_b4_CH3.copy()
     # now do combinations
     for c3_1_loop in range(0, 72):
         Position[moveAtomID_CH3_1, :] = all_CH3_1[c3_1_loop]
@@ -55,6 +56,7 @@ def rotate_CH3(Position, delta_term_CH3_1, delta_term_CH3_2, CH3_1_index, CH3_2_
                     s_r_6 = np.power(radii_2[ind0] / sum_2[ind0], 3)
                     E = np.power(1 - s_r_6, 2)
                     total_E = np.sum(E)
+                    min_Position = Position.copy()
                 if (CH3_E == 0):
                     diff_pos = Position[clash_list[:, 0], :] - Position[clash_list[:, 1], :]
                     sum_2 = np.sum(np.square(diff_pos), 1)
@@ -64,5 +66,5 @@ def rotate_CH3(Position, delta_term_CH3_1, delta_term_CH3_2, CH3_1_index, CH3_2_
                     total_E = np.sum(E)
                     found_0 = 1
                     
-                    return total_E
-    return total_E
+                    return total_E, Position
+    return total_E, min_Position

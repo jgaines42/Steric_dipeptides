@@ -22,6 +22,7 @@ from calcDihedral import calcDihedral
 from rotate_DA import rotate_DA
 from create_clash_list import create_clash_list
 from rotate_CH3 import rotate_CH3
+from rotate_end_CH3 import rotate_end_CH3
 
 # Get arguments
 folder = sys.argv[1]
@@ -73,7 +74,7 @@ psi_index = np.array([6, 8, n_atoms - 8, next_res_index[0]])
 chi1_index = np.array([6, 8, 10, 12])
 CH3_1_index = np.array([8, 10, 12, 13])
 CH3_2_index = np.array([8, 10, 16, 17])
-end_CH3_1_index = np.array([0, 1, 4, 6])
+end_CH3_1_index = np.array([6, 4, 1, 0])
 end_CH3_2_index = np.array([20, 22, 24, 25])
 
 # Get initial dihedral angle values
@@ -109,6 +110,8 @@ delta_term_psi = np.pi * np.sign(psi_init) * psi_init / 180.0
 delta_term_chi1 = np.pi * np.sign(chi1_init) * chi1_init / 180.0
 delta_term_CH3_1 = np.pi * np.sign(CH3_1_init) * CH3_1_init / 180.0
 delta_term_CH3_2 = np.pi * np.sign(CH3_2_init) * CH3_2_init / 180.0
+delta_term_end_CH3_1 = np.pi * np.sign(end_CH3_1_init) * end_CH3_1_init / 180.0
+delta_term_end_CH3_2 = np.pi * np.sign(end_CH3_2_init) * end_CH3_2_init / 180.0
 
 # get clash list that include side chain CH3 atoms
 ind0 = np.isin(clash_list[:, 0], moveAtomID_CH3_1)
@@ -117,6 +120,19 @@ ind2 = np.isin(clash_list[:, 0], moveAtomID_CH3_2)
 ind3 = np.isin(clash_list[:, 1], moveAtomID_CH3_2)
 CH3_clash_list = clash_list[ind0 | ind1 | ind2 | ind3, :]
 CH3_radii_list = radii_2[ind0 | ind1 | ind2 | ind3]
+
+
+# get clash list that includes end H3 atoms
+ind0 = np.isin(clash_list[:, 0], moveAtomID_end_CH3_2)
+ind1 = np.isin(clash_list[:, 1], moveAtomID_end_CH3_2)
+CH3_end2_clash_list = clash_list[ind0 | ind1, :]
+CH3_end2_radii_list = radii_2[ind0 | ind1]
+
+# get clash list that includes end H3 atoms
+ind0 = np.isin(clash_list[:, 0], moveAtomID_end_CH3_1)
+ind1 = np.isin(clash_list[:, 1], moveAtomID_end_CH3_1)
+CH3_end1_clash_list = clash_list[ind0 | ind1, :]
+CH3_end1_radii_list = radii_2[ind0 | ind1]
 
 # Get initial E
 # Check clashes
@@ -186,20 +202,28 @@ for phi_loop in range(0, 72):
                 Position_ppc = Position_CH3.copy()
 
             # Try rotating end CH3 group
-            if (clash_used[0, 0] == 0 and clash_used[0, 1] == 5):
-                clash_used = clash_used[1:clash_used.shape[0], :]
-            ind1 = np.isin(moveAtomID_end_CH3_1, clash_used)
+            # if (clash_used[0, 0] == 0 and clash_used[0, 1] == 5):
+            #     clash_used = clash_used[1:clash_used.shape[0], :]
             ind2 = np.isin(moveAtomID_end_CH3_2, clash_used)
-            if (total_E > 0 and (np.any(ind1) or np.any(ind2))):
+            if (total_E > 0 and np.any(ind2)):
                 min_E = total_E
+                # print(min_E)
+                # print(clash_used)
+                # print(E)
                 # Rotate CH3 groups
-                min_E = rotate_end_CH3(Position_ppc.copy(), delta_term_CH3_1, delta_term_CH3_2, CH3_1_index, CH3_2_index, moveAtomID_CH3_1, moveAtomID_CH3_2, clash_list, radii_2, min_E, CH3_clash_list, CH3_radii_list)
+                [min_E, new_Pos] = rotate_end_CH3(Position_ppc.copy(), delta_term_end_CH3_2, end_CH3_2_index, moveAtomID_end_CH3_2, clash_list, radii_2, min_E, CH3_end2_clash_list, CH3_end2_radii_list)
                 total_E = min_E
-                print(clash_used)
-                print(E)
-                print(total_E)
-               
+                Position_ppc = new_Pos.copy()
+                #print(min_E)
 
+            ind1 = np.isin(moveAtomID_end_CH3_1, clash_used)
+            if (total_E > 0 and np.any(ind1)):
+                min_E = total_E
+                # print(clash_used)
+                # print(E)
+                # Rotate CH3 groups
+                [min_E, new_Pos] = rotate_end_CH3(Position_ppc.copy(), delta_term_end_CH3_1, end_CH3_1_index, moveAtomID_end_CH3_1, clash_list, radii_2, min_E, CH3_end1_clash_list, CH3_end1_radii_list)
+                total_E = min_E
 
             all_energy[counter, 0] = setPhi
             all_energy[counter, 1] = setPsi
