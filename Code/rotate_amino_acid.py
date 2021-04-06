@@ -9,14 +9,14 @@
 #
 # Input:
 #   folder: path to folder with the coordinate file
-#   coord_file: file name containing the coordinates. Coordinates must be in gromacs order and style (in nm)
+#   coord_file: file name containing the coordinates. Coordinates must be in gromacs order but in Angstroms
 #   AA_name: amino acid 3 letter abbreviation
 #   coord_num: integer of which set of corodinates this is
 #   save_folder: folder to save data
 #   save_name: additional string to use in save file names
 #
 # Required files
-#   coord_file: coordinates in Gro order, columns = x, y, z, in nm
+#   coord_file: coordinates in Gro order, columns = x, y, z, in Angstroms
 #   Val_bonds.txt: atom indexes (1 indexed) of all atomic bonds
 #   Val_angles.txt: atom indexes of all bond angles
 #   Val_radii.txt: Atomic radii (in Angstroms) for each atom
