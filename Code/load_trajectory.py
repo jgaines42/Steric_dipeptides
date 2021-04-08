@@ -7,12 +7,17 @@ from pytrr import (
 
 import numpy as np
 from create_clash_list import create_clash_list
+import random
 
 n_sample = 1000
+to_sample = random.sample(range(1, 50000), n_sample)
+to_sample = np.sort(to_sample)
+print(to_sample[0:10])
+
 # Load bonds
-bonds = np.loadtxt('../Val_bonds.txt', dtype=int)
-angles = np.loadtxt('../Val_angles.txt', dtype=int)
-hbonds = np.loadtxt('../Val_Hbond.txt', dtype=int)
+bonds = np.loadtxt('Val_bonds.txt', dtype=int)
+angles = np.loadtxt('Val_angles.txt', dtype=int)
+hbonds = np.loadtxt('Val_Hbond.txt', dtype=int)
 # fix bonds and angles to 0 indexing
 bonds = bonds - 1
 angles = angles - 1
@@ -21,7 +26,7 @@ hbonds = hbonds - 1
 all_bl = np.zeros([bonds.shape[0], n_sample])
 all_angles = np.zeros([angles.shape[0], n_sample])
 all_dihedral = np.zeros([9, n_sample])
-file1 = '/Users/jmorte02/Documents/Projects/Dipeptides/Val_dipeptide/s1/prod_all.trr'
+file1 = '/Users/jmorte02/Documents/Projects/Dipeptides/Val_dipeptide/s1/bemeta/prod1.trr'
 counter = 0
 
 # dihedral positions
@@ -35,9 +40,9 @@ end_CH3_2_index = np.array([20, 22, 24, 25])
 omega_1_index = np.array([1, 4, 6, 8])
 omega_2_index = np.array([8, 20, 22, 24])
 
-radii = np.loadtxt('../Val_radii.txt')
+radii = np.loadtxt('Val_radii.txt')
 # Create clash list
-clash_list = create_clash_list(28, bonds, angles, radii)
+clash_list = create_clash_list(28, bonds, angles)
 # Get radii^2
 radii_sum = radii[clash_list[:, 0]] + radii[clash_list[:, 1]]
 
@@ -53,30 +58,39 @@ for i in range(0, hbonds.shape[0]):
 radii_2 = radii_sum * radii_sum
 all_time = np.zeros([n_sample, 1])
 all_E = np.zeros([n_sample, 1])
+
+next_use = to_sample[0]
+n_used = 0
+
 with open(file1, 'rb') as inputfile:
-    for i in range(0, n_sample):
+    for i in range(0, to_sample[n_sample-1]):
         header = read_trr_header(inputfile)
         time1 = header['time']
         data = read_trr_data(inputfile, header)
-        coord = data['x'] * 10.0
 
-        # Get repulsive LJ energy
-        diff_pos = coord[clash_list[:, 0], :] - coord[clash_list[:, 1], :]
-        sum_2 = np.sum(np.square(diff_pos), 1)
-        ind0 = sum_2 < radii_2
-        s_r_6 = np.power(radii_2[ind0] / sum_2[ind0], 3)
-        E = np.power(1 - s_r_6, 2)
-        total_E = np.sum(E)
-        all_E[i] = total_E / 72.0
-        all_time[i] = time1
+        if (i == next_use):
 
-        # Save coordinates
-        np.savetxt('../coord_data/Val_coordinates_' + str(i) + '.txt', coord, fmt='%6.3f')
+            coord = data['x'] * 10.0
 
-np.savetxt('MD_data/MD_energy_1.txt', all_E)
-np.savetxt('MD_data/MD_time_1.txt', all_time)
+            # Get repulsive LJ energy
+            diff_pos = coord[clash_list[:, 0], :] - coord[clash_list[:, 1], :]
+            sum_2 = np.sum(np.square(diff_pos), 1)
+            ind0 = sum_2 < radii_2
+            s_r_6 = np.power(radii_2[ind0] / sum_2[ind0], 3)
+            E = np.power(1 - s_r_6, 2)
+            total_E = np.sum(E)
+            all_E[n_used] = total_E / 72.0
+            all_time[n_used] = time1
 
+            # Save coordinates
+            np.savetxt('../coord_data_bemeta/Val_coordinates_' + str(n_used) + '.txt', coord, fmt='%6.3f')
+            n_used = n_used + 1
+            next_use = to_sample[n_used]
 
+np.savetxt('../MD_data/bemeta_Val_MD_energy_1.txt', all_E)
+np.savetxt('../MD_data/bemeta_Val_MD_time_1.txt', all_time)
+
+print(next_use)
 ##################################################
 # Code for calculating bond lengths and angles
 
