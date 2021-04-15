@@ -38,14 +38,14 @@ def rotate_CH3(Position, delta_term_CH3_1, delta_term_CH3_2, CH3_1_index, CH3_2_
     all_CH3_1 = [0] * 72
     for c3_1_loop in range(0, 72):
         setCH3_1 = c3_1_loop * 5.0
-        Position = rotate_DA(Pos_b4_CH3.copy(), setCH3_1, delta_term_CH3_1, CH3_1_index, moveAtomID_CH3_1)
+        Position = rotate_DA(Pos_b4_CH3, setCH3_1, delta_term_CH3_1, CH3_1_index, moveAtomID_CH3_1)
         all_CH3_1[c3_1_loop] = Position[moveAtomID_CH3_1, :]
 
     # Make all CH3 2 positions
     all_CH3_2 = [0] * 72
     for c3_2_loop in range(0, 72):
         setCH3_2 = c3_2_loop * 5.0
-        Position = rotate_DA(Pos_b4_CH3.copy(), setCH3_2, delta_term_CH3_2, CH3_2_index, moveAtomID_CH3_2)
+        Position = rotate_DA(Pos_b4_CH3, setCH3_2, delta_term_CH3_2, CH3_2_index, moveAtomID_CH3_2)
         all_CH3_2[c3_2_loop] = Position[moveAtomID_CH3_2, :]
 
     found_0 = 0

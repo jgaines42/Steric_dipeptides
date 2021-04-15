@@ -39,6 +39,9 @@ from rotate_DA import rotate_DA
 from create_clash_list import create_clash_list
 from rotate_CH3 import rotate_CH3
 from rotate_end_CH3 import rotate_end_CH3
+import time
+
+time1 = time.perf_counter()
 
 # Get arguments
 folder = sys.argv[1]
@@ -168,38 +171,41 @@ counter = 0
 Initial_Position = Coord
 
 # Loop over all phi
-for phi_loop in range(0, 36):
+for phi_loop in range(0, 1):
     setPhi = phi_loop * 10.0
-    Pos_phi = rotate_DA(Initial_Position.copy(), setPhi, delta_term_phi, phi_index, moveAtomID_phi)
+    Pos_phi = rotate_DA(Initial_Position, setPhi, delta_term_phi, phi_index, moveAtomID_phi)
     print(setPhi)
     
     # After setting phi, CB won't move when we rotate psi, so we can pre-make all chi structures
     all_Chi_pos = [0] * 36
     for chi1_preloop in range(0, 36):
         setChi = chi1_preloop * 10.0
-        Position = rotate_DA(Pos_phi.copy(), setChi, delta_term_chi1, chi1_index, moveAtomID_chi1)
+        Position = rotate_DA(Pos_phi, setChi, delta_term_chi1, chi1_index, moveAtomID_chi1)
         all_Chi_pos[chi1_preloop] = Position[moveAtomID_chi1, :]
 
 
     for psi_loop in range(0, 36):
         setPsi = psi_loop * 10.0
-        Pos_phi_psi = rotate_DA(Pos_phi.copy(), setPsi, delta_term_psi, psi_index, moveAtomID_psi)
+        Pos_phi_psi = rotate_DA(Pos_phi, setPsi, delta_term_psi, psi_index, moveAtomID_psi)
         print(setPsi)
         for chi1_loop in range(0, 36):
             Position_ppc = Pos_phi_psi.copy()
             Position_ppc[moveAtomID_chi1, :] = all_Chi_pos[chi1_loop]
 
             setChi = chi1_loop * 10.0
-            # Position_ppc = rotate_DA(Pos_phi_psi.copy(), setChi, delta_term_chi1, chi1_index, moveAtomID_chi1)
             total_E = 0
 
             # Now that we've rotated everything, check for clashes
             diff_pos = Position_ppc[clash_list[:, 0], :] - Position_ppc[clash_list[:, 1], :]
-            sum_2 = np.sum(np.square(diff_pos), 1)
+            #sum_2 = np.sum(np.square(diff_pos), 1)
+            sum_2 = np.sum(diff_pos * diff_pos, 1)
             ind0 = sum_2 < radii_2
 
-            s_r_6 = np.power(radii_2[ind0] / sum_2[ind0], 3)
-            E = np.power(1 - s_r_6, 2)
+            s_over_r = radii_2[ind0] / sum_2[ind0]
+            s_r_6 = s_over_r * s_over_r * s_over_r
+            E = (1 - s_r_6) * (1 - s_r_6)
+            #s_r_6 = np.power(radii_2[ind0] / sum_2[ind0], 3)
+            #E = np.power(1 - s_r_6, 2)
             total_E = np.sum(E)
 
             # See if any of the clashes included the SC CH3 group
@@ -216,7 +222,7 @@ for phi_loop in range(0, 36):
                                                    CH3_2_index, moveAtomID_CH3_1, moveAtomID_CH3_2, clash_list, radii_2,
                                                    min_E, CH3_clash_list, CH3_radii_list)
                 total_E = min_E
-                Position_ppc = Position_CH3.copy()
+                Position_ppc = Position_CH3
 
             # See if any clashes include N-terminal end CH3
             ind1 = np.isin(moveAtomID_end_CH3_1, clash_used)
@@ -226,7 +232,7 @@ for phi_loop in range(0, 36):
                                                   moveAtomID_end_CH3_1, clash_list, radii_2, min_E,
                                                   CH3_end1_clash_list, CH3_end1_radii_list)
                 total_E = min_E
-                Position_ppc = new_Pos.copy()
+                Position_ppc = new_Pos
 
             # See if any clashes include Cterminal end CH3
             ind2 = np.isin(moveAtomID_end_CH3_2, clash_used)
@@ -236,7 +242,7 @@ for phi_loop in range(0, 36):
                                                   moveAtomID_end_CH3_2, clash_list, radii_2, min_E,
                                                   CH3_end2_clash_list, CH3_end2_radii_list)
                 total_E = min_E
-                Position_ppc = new_Pos.copy()
+                Position_ppc = new_Pos
 
             all_energy[counter, 0] = setPhi
             all_energy[counter, 1] = setPsi
@@ -246,3 +252,5 @@ for phi_loop in range(0, 36):
 
 
 np.savetxt(save_folder + 'Val_energy_' + save_name + '_' + coord_num + '.txt', all_energy, fmt='%d %d %d %7.4f')
+time2 = time.perf_counter()
+print('time: ', time2 - time1)

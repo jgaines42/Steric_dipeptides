@@ -16,7 +16,7 @@
 def rotate_DA(Position, setChi, delta_term, iChiArray, moveAtomID):
 
     import numpy as np
-
+    from math import sin, cos
     # Calculate how much the dihedral needs to change (in radians)
     deltaChi1_F153 = delta_term - setChi * np.pi / 180.0
 
@@ -32,8 +32,8 @@ def rotate_DA(Position, setChi, delta_term, iChiArray, moveAtomID):
     CAtoCB_F153 = CAtoCB_F153 / np.linalg.norm(CAtoCB_F153)
 
     # Do complicated math
-    q0 = np.cos(deltaChi1_F153 / 2.0)
-    sindelta = np.sin(deltaChi1_F153 / 2.0)
+    q0 = cos(deltaChi1_F153 / 2.0)
+    sindelta = sin(deltaChi1_F153 / 2.0)
     q1 = CAtoCB_F153[0] * sindelta
     q2 = CAtoCB_F153[1] * sindelta
     q3 = CAtoCB_F153[2] * sindelta

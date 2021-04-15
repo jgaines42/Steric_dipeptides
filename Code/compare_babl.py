@@ -8,7 +8,7 @@ angle_list = np.loadtxt('Val_angles.txt', dtype=int)
 angle_list = angle_list - 1
 
 
-all_bonds = np.loadtxt('../Dun_coordinates/all_bonds.txt')
+all_bonds = np.loadtxt('../../Dun_coordinates/all_bonds.txt')
 bond_length_means = np.zeros([all_bonds.shape[0], 4])
 for i in range(0, all_bonds.shape[0]):
     bond_length_means[i, 0] = np.mean(all_bonds[i, :])
@@ -18,7 +18,7 @@ for i in range(0, all_bonds.shape[0]):
 print(bond_length_means[0, :])
 
 #all_angles = np.loadtxt('MD_data/all_angles.txt')
-all_angles = np.loadtxt('../Dun_coordinates/all_angles.txt')
+all_angles = np.loadtxt('../../Dun_coordinates/all_angles.txt')
 bond_angle_means = np.zeros([all_angles.shape[0], 4])
 for i in range(0, all_angles.shape[0]):
     bond_angle_means[i, 0] = np.mean(all_angles[i, :])
@@ -27,7 +27,7 @@ for i in range(0, all_angles.shape[0]):
     bond_angle_means[i, 3] = np.max(all_angles[i, :])
 
 
-all_bonds = np.loadtxt('MD_data/all_bonds.txt')
+all_bonds = np.loadtxt('../MD_data/all_bonds.txt')
 bond_length_means_MD = np.zeros([all_bonds.shape[0], 4])
 for i in range(0, all_bonds.shape[0]):
     bond_length_means_MD[i, 0] = np.mean(all_bonds[i, :])
@@ -35,10 +35,10 @@ for i in range(0, all_bonds.shape[0]):
     bond_length_means_MD[i, 2] = np.min(all_bonds[i, :])
     bond_length_means_MD[i, 3] = np.max(all_bonds[i, :])
 
-bond_length_means_MD = np.loadtxt('MD_data/bond_length_means.txt')
+bond_length_means_MD = np.loadtxt('../MD_data/bond_length_means.txt')
 
 #all_angles = np.loadtxt('MD_data/all_angles.txt')
-bond_angle_means_MD = np.loadtxt('MD_data/bond_angle_means.txt')
+bond_angle_means_MD = np.loadtxt('../MD_data/bond_angle_means.txt')
 # for i in range(0, all_angles.shape[0]):
 #     bond_angle_means_MD[i, 0] = np.mean(all_angles[i, :])
 #     bond_angle_means_MD[i, 1] = np.std(all_angles[i, :])
@@ -51,7 +51,7 @@ sub_means = bond_length_means[ind0, :]
 sub_MD = bond_length_means_MD[ind0, :]
 print(sub_means.shape[0])
 plt.errorbar(np.arange(0, sub_means.shape[0]), sub_means[:, 0], yerr=sub_means[:, 1],  fmt='o')
-plt.errorbar(np.arange(0, sub_MD.shape[0])+.33, sub_MD[:, 0], yerr=sub_MD[:, 1],  fmt='o')
+plt.errorbar(np.arange(0, sub_MD.shape[0])+.33, sub_MD[:, 0], yerr=sub_MD[:, 1],  fmt='x')
 plt.show()
 
 
