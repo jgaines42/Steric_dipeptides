@@ -32,14 +32,65 @@
 #
 ############################################################################
 
-import numpy as np
+
 import sys
 from calcDihedral import calcDihedral
-from rotate_DA import rotate_DA
+#from rotate_DA import rotate_DA
 from create_clash_list import create_clash_list
 from rotate_CH3 import rotate_CH3
 from rotate_end_CH3 import rotate_end_CH3
 import time
+import numpy as np
+from math import sin, cos
+
+
+def rotate_DA(Position, setChi, delta_term, iChiArray, moveAtomID):
+
+    #import numpy as np
+    
+    # Calculate how much the dihedral needs to change (in radians)
+    deltaChi1_F153 = delta_term - setChi * np.pi / 180.0
+
+    # Get the coordinates of the 2nd atom in the dihedral
+    subtract_atom = Position[iChiArray[1], :]
+
+    # Move all atoms so 2nd atom of dihedral is at orgin
+    TempPosition = Position - subtract_atom
+
+    # Get the vector from the origin to the 3rd atom of the dihedral.
+    # This is the vector that we will rotate around
+    CAtoCB_F153 = -TempPosition[iChiArray[2], :]
+    CAtoCB_F153 = CAtoCB_F153 / np.linalg.norm(CAtoCB_F153)
+
+    # Do complicated math
+    q0 = cos(deltaChi1_F153 / 2.0)
+    sindelta = sin(deltaChi1_F153 / 2.0)
+    q1 = CAtoCB_F153[0] * sindelta
+    q2 = CAtoCB_F153[1] * sindelta
+    q3 = CAtoCB_F153[2] * sindelta
+    q02 = q0 * q0
+    q12 = q1 * q1
+    q22 = q2 * q2
+    q32 = q3 * q3
+
+    # Q is the rotation vector
+    Q = np.array([[(q02 + q12 - q22 - q32), 2.0 * (q1 * q2 - q0 * q3), 2.0 * (q0 * q2 + q1 * q3)],
+                 [2.0 * (q1 * q2 + q0 * q3), (q02 - q12 + q22 - q32), 2.0 * (-q0 * q1 + q2 * q3)],
+                 [2.0 * (-q0 * q2 + q1 * q3), 2 * (q0 * q1 + q2 * q3), (q02 - q12 - q22 + q32)]])
+
+    # Extract the coordinates that should move
+    move_coordinates = TempPosition[moveAtomID, :]
+
+    # Use Q to rotate these atoms
+    newPos = np.matmul(Q, move_coordinates.T)
+
+    # Put the moved atoms back into the original array
+    TempPosition[moveAtomID, :] = newPos.T
+
+    # Translate atoms back to original location
+    new_Pos1 = TempPosition + subtract_atom
+    return new_Pos1
+
 
 time1 = time.perf_counter()
 
@@ -150,7 +201,6 @@ ind1 = np.isin(clash_list[:, 1], moveAtomID_end_CH3_2)
 CH3_end2_clash_list = clash_list[ind0 | ind1, :]
 CH3_end2_radii_list = radii_2[ind0 | ind1]
 
-
 # Get initial E
 # Check clashes
 diff_pos = Coord[clash_list[:, 0], :] - Coord[clash_list[:, 1], :]      # distance vector
@@ -188,6 +238,7 @@ for phi_loop in range(0, 1):
         setPsi = psi_loop * 10.0
         Pos_phi_psi = rotate_DA(Pos_phi, setPsi, delta_term_psi, psi_index, moveAtomID_psi)
         print(setPsi)
+
         for chi1_loop in range(0, 36):
             Position_ppc = Pos_phi_psi.copy()
             Position_ppc[moveAtomID_chi1, :] = all_Chi_pos[chi1_loop]
@@ -206,7 +257,7 @@ for phi_loop in range(0, 1):
             E = (1 - s_r_6) * (1 - s_r_6)
             #s_r_6 = np.power(radii_2[ind0] / sum_2[ind0], 3)
             #E = np.power(1 - s_r_6, 2)
-            total_E = np.sum(E)
+            total_E = sum(E)
 
             # See if any of the clashes included the SC CH3 group
             clash_used = clash_list[ind0, :]
@@ -225,6 +276,7 @@ for phi_loop in range(0, 1):
                 Position_ppc = Position_CH3
 
             # See if any clashes include N-terminal end CH3
+
             ind1 = np.isin(moveAtomID_end_CH3_1, clash_used)
             if (total_E > 0 and np.any(ind1)):
                 min_E = total_E
@@ -233,9 +285,10 @@ for phi_loop in range(0, 1):
                                                   CH3_end1_clash_list, CH3_end1_radii_list)
                 total_E = min_E
                 Position_ppc = new_Pos
-
+                print('rotate end')
             # See if any clashes include Cterminal end CH3
             ind2 = np.isin(moveAtomID_end_CH3_2, clash_used)
+            
             if (total_E > 0 and np.any(ind2)):
                 min_E = total_E
                 [min_E, new_Pos] = rotate_end_CH3(Position_ppc.copy(), delta_term_end_CH3_2, end_CH3_2_index,
@@ -243,14 +296,15 @@ for phi_loop in range(0, 1):
                                                   CH3_end2_clash_list, CH3_end2_radii_list)
                 total_E = min_E
                 Position_ppc = new_Pos
-
+                print('rotate end')
             all_energy[counter, 0] = setPhi
             all_energy[counter, 1] = setPsi
             all_energy[counter, 2] = setChi
             all_energy[counter, 3] = total_E
             counter = counter + 1
 
-
+        #time2 = time.perf_counter()
+        #print('one loop', time2-time1)
 np.savetxt(save_folder + 'Val_energy_' + save_name + '_' + coord_num + '.txt', all_energy, fmt='%d %d %d %7.4f')
 time2 = time.perf_counter()
 print('time: ', time2 - time1)

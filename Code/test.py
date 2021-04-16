@@ -1,8 +1,21 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-data = np.loadtxt('../Dun_coordinates/Val_coordinates.txt')
-print(data[0, 0:5])
+# data = np.loadtxt('../Dun_coordinates/Val_coordinates.txt')
+# print(data[0, 0:5])
+
+data1 = np.loadtxt('../rotation_results/full_bemeta/Val_energy_041521_1.txt')
+
+data2 = np.loadtxt('../rotation_results/full_bemeta/Val/Val_energy_040821_1.txt')
+
+diff = data1[0:36*36, 3] - data2[0:36*36, 3]
+print(diff.min())
+print(diff.max())
+# ind0 = diff < -1
+# x = data1[ind0, :]
+# print(x[0:5, :])
+# plt.plot(data1[:, 1], diff)
+# plt.show()
 
 # data = np.loadtxt('MD_Data/MD_energy_1.txt')
 # dihedral = np.loadtxt('MD_Data/all_dihedral.txt')

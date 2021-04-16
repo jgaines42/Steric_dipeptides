@@ -18,10 +18,12 @@
 #   min_Positions: the coordinates of the system at this minimum energy
 #
 ##################################################################################
+import numpy as np
+#from rotate_DA import rotate_DA
+from math import sin, cos
 
+#@profile
 def rotate_end_CH3(Position, delta_term_CH3_1, CH3_1_index, moveAtomID_CH3_1, clash_list, radii_2, min_E, CH3_clash_list, CH3_radii_list):
-    import numpy as np
-    from rotate_DA import rotate_DA
 
     Pos_b4_CH3 = Position.copy()
 
@@ -37,7 +39,49 @@ def rotate_end_CH3(Position, delta_term_CH3_1, CH3_1_index, moveAtomID_CH3_1, cl
     all_CH3_1 = [0] * 72
     for c3_1_loop in range(0, 72):
         setCH3_1 = c3_1_loop * 5.0
-        Position = rotate_DA(Pos_b4_CH3.copy(), setCH3_1, delta_term_CH3_1, CH3_1_index, moveAtomID_CH3_1)
+        #Position = rotate_DA(Pos_b4_CH3.copy(), setCH3_1, delta_term_CH3_1, CH3_1_index, moveAtomID_CH3_1)
+        # Calculate how much the dihedral needs to change (in radians)
+        deltaChi1_F153 = delta_term_CH3_1 - setCH3_1 * np.pi / 180.0
+
+        # Get the coordinates of the 2nd atom in the dihedral
+        subtract_atom = Pos_b4_CH3[CH3_1_index[1], :]
+
+        # Move all atoms so 2nd atom of dihedral is at orgin
+        TempPosition = Pos_b4_CH3 - subtract_atom
+
+        # Get the vector from the origin to the 3rd atom of the dihedral.
+        # This is the vector that we will rotate around
+        CAtoCB_F153 = -TempPosition[CH3_1_index[2], :]
+        CAtoCB_F153 = CAtoCB_F153 / np.linalg.norm(CAtoCB_F153)
+
+        # Do complicated math
+        q0 = cos(deltaChi1_F153 / 2.0)
+        sindelta = sin(deltaChi1_F153 / 2.0)
+        q1 = CAtoCB_F153[0] * sindelta
+        q2 = CAtoCB_F153[1] * sindelta
+        q3 = CAtoCB_F153[2] * sindelta
+        q02 = q0 * q0
+        q12 = q1 * q1
+        q22 = q2 * q2
+        q32 = q3 * q3
+
+        # Q is the rotation vector
+        Q = np.array([[(q02 + q12 - q22 - q32), 2.0 * (q1 * q2 - q0 * q3), 2.0 * (q0 * q2 + q1 * q3)],
+                     [2.0 * (q1 * q2 + q0 * q3), (q02 - q12 + q22 - q32), 2.0 * (-q0 * q1 + q2 * q3)],
+                     [2.0 * (-q0 * q2 + q1 * q3), 2 * (q0 * q1 + q2 * q3), (q02 - q12 - q22 + q32)]])
+
+        # Extract the coordinates that should move
+        move_coordinates = TempPosition[moveAtomID_CH3_1, :]
+
+        # Use Q to rotate these atoms
+        newPos = np.matmul(Q, move_coordinates.T)
+
+        # Put the moved atoms back into the original array
+        TempPosition[moveAtomID_CH3_1, :] = newPos.T
+
+        # Translate atoms back to original location
+        Position = TempPosition + subtract_atom
+
         all_CH3_1[c3_1_loop] = Position[moveAtomID_CH3_1, :]
 
     found_0 = 0
@@ -53,11 +97,15 @@ def rotate_end_CH3(Position, delta_term_CH3_1, CH3_1_index, moveAtomID_CH3_1, cl
 
             # Just check energy due to CH3 clashes
             diff_pos = Position[CH3_clash_list[:, 0], :] - Position[CH3_clash_list[:, 1], :]
-            sum_2 = np.sum(np.square(diff_pos), 1)
+            sum_2 = np.sum(diff_pos * diff_pos, 1)
+            #sum_2 = np.sum(np.square(diff_pos), 1)
             ind0 = sum_2 < CH3_radii_list
-            s_r_6 = np.power(CH3_radii_list[ind0] / sum_2[ind0], 3)
-            E = np.power(1 - s_r_6, 2)
-            this_E = np.sum(E)
+            # s_r_6 = np.power(CH3_radii_list[ind0] / sum_2[ind0], 3)
+            # E = np.power(1 - s_r_6, 2)
+            s_over_r = CH3_radii_list[ind0] / sum_2[ind0]
+            s_r_6 = s_over_r * s_over_r * s_over_r
+            E = (1 - s_r_6) * (1 - s_r_6)
+            this_E = sum(E)
 
             # if this energy is less than the lowest CH3 energy so far
             if (this_E < CH3_E):
@@ -66,11 +114,15 @@ def rotate_end_CH3(Position, delta_term_CH3_1, CH3_1_index, moveAtomID_CH3_1, cl
 
                 # Get full energy of the system
                 diff_pos = Position[clash_list[:, 0], :] - Position[clash_list[:, 1], :]
-                sum_2 = np.sum(np.square(diff_pos), 1)
+                #sum_2 = np.sum(np.square(diff_pos), 1)
+                sum_2 = np.sum(diff_pos * diff_pos, 1)
                 ind0 = sum_2 < radii_2
-                s_r_6 = np.power(radii_2[ind0] / sum_2[ind0], 3)
-                E = np.power(1 - s_r_6, 2)
-                total_E = np.sum(E)
+                # s_r_6 = np.power(radii_2[ind0] / sum_2[ind0], 3)
+                # E = np.power(1 - s_r_6, 2)
+                s_over_r = radii_2[ind0] / sum_2[ind0]
+                s_r_6 = s_over_r * s_over_r * s_over_r
+                E = (1 - s_r_6) * (1 - s_r_6)
+                total_E = sum(E)
 
                 # Store the new lowest energy positions
                 min_Position = Position.copy()
@@ -79,12 +131,12 @@ def rotate_end_CH3(Position, delta_term_CH3_1, CH3_1_index, moveAtomID_CH3_1, cl
             if (CH3_E == 0):
 
                 # Get full energy of the system
-                diff_pos = Position[clash_list[:, 0], :] - Position[clash_list[:, 1], :]
-                sum_2 = np.sum(np.square(diff_pos), 1)
-                ind0 = sum_2 < radii_2
-                s_r_6 = np.power(radii_2[ind0] / sum_2[ind0], 3)
-                E = np.power(1 - s_r_6, 2)
-                total_E = np.sum(E)
+                # diff_pos = Position[clash_list[:, 0], :] - Position[clash_list[:, 1], :]
+                # sum_2 = np.sum(np.square(diff_pos), 1)
+                # ind0 = sum_2 < radii_2
+                # s_r_6 = np.power(radii_2[ind0] / sum_2[ind0], 3)
+                # E = np.power(1 - s_r_6, 2)
+                # total_E = np.sum(E)
                 found_0 = 1
                 return total_E, Position
 

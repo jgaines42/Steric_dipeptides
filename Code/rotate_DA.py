@@ -13,10 +13,13 @@
 # Returns:
 #   new_Pos1: new coordinates of dipeptide
 ##########################################
+import numpy as np
+from math import sin, cos
+
+@profile
 def rotate_DA(Position, setChi, delta_term, iChiArray, moveAtomID):
 
-    import numpy as np
-    from math import sin, cos
+  
     # Calculate how much the dihedral needs to change (in radians)
     deltaChi1_F153 = delta_term - setChi * np.pi / 180.0
 
