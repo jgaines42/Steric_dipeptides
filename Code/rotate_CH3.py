@@ -26,9 +26,7 @@ from math import sin, cos
 
 #@profile
 def rotate_CH3(Position, delta_term_CH3_1, delta_term_CH3_2, CH3_1_index, CH3_2_index, moveAtomID_CH3_1, moveAtomID_CH3_2, clash_list, radii_2, min_E, CH3_clash_list, CH3_radii_list):
-
     Pos_b4_CH3 = Position.copy()
-
     # Get initial energy due to CH3 groups
     diff_pos = Position[CH3_clash_list[:, 0], :] - Position[CH3_clash_list[:, 1], :]
     sum_2 = np.sum(np.square(diff_pos), 1)
@@ -36,7 +34,6 @@ def rotate_CH3(Position, delta_term_CH3_1, delta_term_CH3_2, CH3_1_index, CH3_2_
     s_r_6 = np.power(CH3_radii_list[ind0] / sum_2[ind0], 3)
     E = np.power(1 - s_r_6, 2)
     CH3_E = np.sum(E)
-
     # Make all CH3 1 positions
     all_CH3_1 = [0] * 72
     for c3_1_loop in range(0, 72):
@@ -172,7 +169,6 @@ def rotate_CH3(Position, delta_term_CH3_1, delta_term_CH3_2, CH3_1_index, CH3_2_
 
                     # Set new lowest CH3 energy
                     CH3_E = this_E
-
                     # Get the total energy of the system and store in total_E
                     diff_pos2 = Position[clash_list[:, 0], :] - Position[clash_list[:, 1], :]
                     #sum_2 = np.sum(np.square(diff_pos), 1)
@@ -190,7 +186,6 @@ def rotate_CH3(Position, delta_term_CH3_1, delta_term_CH3_2, CH3_1_index, CH3_2_
 
                 # If there is no energy due to overlaps of the CH3 hydrogens, end the loop
                 if (CH3_E == 0):
-
                     # Get the total energy of the system and store in total E
                     diff_pos2 = Position[clash_list[:, 0], :] - Position[clash_list[:, 1], :]
                     #sum_2 = np.sum(np.square(diff_pos), 1)

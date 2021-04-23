@@ -111,7 +111,7 @@ def rotate_end_CH3(Position, delta_term_CH3_1, CH3_1_index, moveAtomID_CH3_1, cl
             if (this_E < CH3_E):
                 # Store the new lowest energy
                 CH3_E = this_E
-
+                
                 # Get full energy of the system
                 diff_pos = Position[clash_list[:, 0], :] - Position[clash_list[:, 1], :]
                 #sum_2 = np.sum(np.square(diff_pos), 1)

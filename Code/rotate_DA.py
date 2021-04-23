@@ -16,7 +16,7 @@
 import numpy as np
 from math import sin, cos
 
-@profile
+
 def rotate_DA(Position, setChi, delta_term, iChiArray, moveAtomID):
 
   
@@ -49,7 +49,8 @@ def rotate_DA(Position, setChi, delta_term, iChiArray, moveAtomID):
     Q = np.array([[(q02 + q12 - q22 - q32), 2.0 * (q1 * q2 - q0 * q3), 2.0 * (q0 * q2 + q1 * q3)],
                  [2.0 * (q1 * q2 + q0 * q3), (q02 - q12 + q22 - q32), 2.0 * (-q0 * q1 + q2 * q3)],
                  [2.0 * (-q0 * q2 + q1 * q3), 2 * (q0 * q1 + q2 * q3), (q02 - q12 - q22 + q32)]])
-
+    print("Q", Q)
+    asdf
     # Extract the coordinates that should move
     move_coordinates = TempPosition[moveAtomID, :]
 

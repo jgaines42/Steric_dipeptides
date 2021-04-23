@@ -6,11 +6,20 @@ import matplotlib.pyplot as plt
 
 data1 = np.loadtxt('../rotation_results/full_bemeta/Val_energy_041521_1.txt')
 
-data2 = np.loadtxt('../rotation_results/full_bemeta/Val/Val_energy_040821_1.txt')
-
+data2 = np.loadtxt('../C_code/test.txt')
+print(data1[0:10, 3])
+print(data2[0:10, 3])
+data1 = data1[0:36*36,:]
 diff = data1[0:36*36, 3] - data2[0:36*36, 3]
+# print(diff.shape)
+# ind0 = diff > 10
+# prob1 = data1[ind0,:]
+# prob2 = data2[ind0,:]
+# print(prob1[1:10, :])
+# print(prob2[1:10, :])
 print(diff.min())
 print(diff.max())
+
 # ind0 = diff < -1
 # x = data1[ind0, :]
 # print(x[0:5, :])

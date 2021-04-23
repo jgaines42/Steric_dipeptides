@@ -13,10 +13,10 @@ all_max_300 = np.zeros([36, 36])
 all_Chi_pos = [0] * 36
 all_probs = [[0] * 36 for i in range(36)]
 
-folder = '../rotation_results/full_bemeta/Val/'
+folder = '../rotation_results_bemeta/Val/'
 runs = 100
 Te = 0.01
-save_tag = '040821'
+save_tag = '042221'
 prob_spots = 0
 save_this_chi = np.zeros([36*36, 36])
 for run_loop in range(0, runs):
@@ -49,7 +49,7 @@ for run_loop in range(0, runs):
             # plt.plot(this_prob)
             save_this_chi[counter1, :] = this_prob/runs + save_this_chi[counter1, :]
             counter1 = counter1 + 1
-        # plt.show()
+        # plt.close()
 #save_this_chi = save_this_chi / runs
 ind0 = save_this_chi < 10E-20
 save_this_chi[ind0] = 0
@@ -83,7 +83,7 @@ for phi_loop in range(0, 36):
                 print('60 ', phi, psi)
                 print(np.sum(this_data / runs))
                 plt.plot(this_data / runs)
-                plt.show()
+                plt.close()
         else:
             all_max_60[psi, phi] = -1
 
@@ -99,7 +99,7 @@ for phi_loop in range(0, 36):
                 print('180 ', phi, psi)
                 print(np.sum(this_data / runs))
                 plt.plot(this_data/ runs)
-                plt.show()
+                plt.close()
         else:
             all_max_180[psi, phi] = -1
 
@@ -118,7 +118,7 @@ for phi_loop in range(0, 36):
                 print('300 ', phi, psi)
                 print(np.sum(this_data / runs))
                 plt.plot(this_data/ runs)
-                plt.show()
+                plt.close()
         else:
             all_max_300[psi, phi] = -1
         if (all_max_300[psi, phi] == 0):
@@ -136,7 +136,7 @@ for phi_loop in range(0, 36):
         #     plt.plot([0, 36], [0, 0])
         #     plt.plot([11, 11], [0, .1])
         #     plt.plot([23, 23], [0, .1])
-        #     plt.show()
+        #     plt.close()
 #asfd
 
 a = all_60 + all_180 + all_300
@@ -159,7 +159,7 @@ locs, labels = plt.yticks()            # Get locations and labels
 plt.yticks(np.arange(0, 37, 6), np.arange(-180, 181, 60), fontsize=20)
 plt.axis([-0.5, 35.5, -0.5, 35.5])
 plt.savefig(folder + 'full_rotationVal_steric_60_' + save_tag + '_all' + str(runs) + '_new.png', bbox_inches='tight')
-plt.show()
+plt.close()
 
 fig = plt.figure(figsize=(10, 8))
 ax = fig.add_subplot(111)
@@ -178,7 +178,7 @@ plt.yticks(np.arange(0, 37, 6), np.arange(-180, 181, 60), fontsize=20)
 plt.axis([-0.5, 35.5, -0.5, 35.5])
 plt.clim([0, 1])
 plt.savefig(folder + 'Val_steric_180_' + save_tag + '_all' + str(runs) + '_new.png', bbox_inches='tight')
-plt.show()
+plt.close()
 
 fig = plt.figure(figsize=(10, 8))
 ax = fig.add_subplot(111)
@@ -197,7 +197,7 @@ plt.yticks(np.arange(0, 37, 6), np.arange(-180, 181, 60), fontsize=20)
 plt.axis([-0.5, 35.5, -0.5, 35.5])
 plt.clim([0, 1])
 plt.savefig(folder + 'Val_steric_300_' + save_tag + '_all' + str(runs) + '_new.png', bbox_inches='tight')
-plt.show()
+plt.close()
 
 
 
@@ -225,7 +225,7 @@ plt.yticks(np.arange(0, 37, 6), np.arange(-180, 181, 60), fontsize=20)
 plt.clim([-65, 65])
 plt.colorbar(ticks=np.arange(-60, 70, 10))
 plt.savefig(folder + 'Val_steric_60_max_' + save_tag + '_all' + str(runs) + '_new.png', bbox_inches='tight')
-plt.show()
+plt.close()
 
 fig = plt.figure(figsize=(10, 8))
 ax = fig.add_subplot(111)
@@ -243,7 +243,7 @@ plt.yticks(np.arange(0, 37, 6), np.arange(-180, 181, 60), fontsize=20)
 plt.clim([-65, 65])
 plt.colorbar(ticks=np.arange(-60, 70, 10))
 plt.savefig(folder + 'Val_steric_180_max_' + save_tag + '_all' + str(runs) + '_new.png', bbox_inches='tight')
-plt.show()
+plt.close()
 
 np.savetxt('all_max_300.txt', all_max_300)
 
@@ -264,6 +264,6 @@ plt.yticks(np.arange(0, 37, 6), np.arange(-180, 181, 60), fontsize=20)
 plt.clim([-65, 65])
 plt.colorbar(ticks=np.arange(-60, 70, 10))
 plt.savefig(folder + 'Val_steric_300_max_' + save_tag + '_all' + str(runs) + '_new.png', bbox_inches='tight')
-plt.show()
+plt.close()
 
 

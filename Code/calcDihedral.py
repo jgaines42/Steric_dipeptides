@@ -67,5 +67,6 @@ def calcDihedral(AtomArray, position):
     # v and w may not be normalized but that's fine since tan is y/x
     x = np.dot(v, w)
     y = np.dot(np.cross(b1, v), w)
+
     #print(DA, np.degrees(np.arctan2(y, x)) )
     return np.degrees(np.arctan2(y, x))

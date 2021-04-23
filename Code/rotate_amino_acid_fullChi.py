@@ -78,12 +78,12 @@ def rotate_DA(Position, setChi, delta_term, iChiArray, moveAtomID):
                  [2.0 * (q1 * q2 + q0 * q3), (q02 - q12 + q22 - q32), 2.0 * (-q0 * q1 + q2 * q3)],
                  [2.0 * (-q0 * q2 + q1 * q3), 2 * (q0 * q1 + q2 * q3), (q02 - q12 - q22 + q32)]])
 
+
     # Extract the coordinates that should move
     move_coordinates = TempPosition[moveAtomID, :]
 
     # Use Q to rotate these atoms
     newPos = np.matmul(Q, move_coordinates.T)
-
     # Put the moved atoms back into the original array
     TempPosition[moveAtomID, :] = newPos.T
 
@@ -121,12 +121,16 @@ hbonds = hbonds - 1
 # Create clash list
 clash_list = create_clash_list(n_atoms, bonds, angles)
 radii_sum = radii[clash_list[:, 0]] + radii[clash_list[:, 1]]
+np.savetxt('Clash_list_val.txt', clash_list, fmt='%i')
 
 # modify H-bond radii
 for i in range(0, hbonds.shape[0]):
     ind1 = np.isin(clash_list[:, 0], hbonds[i, 0])
     ind2 = np.isin(clash_list[:, 1], hbonds[i, 1])
     radii_sum[ind1 & ind2] = 1.5
+
+np.savetxt('Clash_list_radii_sum_val.txt', radii_sum, fmt='%4.2f')
+
 
 # Get sum of radii for all possible atom pairs in clash list
 radii_2 = radii_sum * radii_sum                                 # Leave as (radii_sum)^2 to improve math later
@@ -156,6 +160,10 @@ end_CH3_2_init = calcDihedral(end_CH3_2_index, Coord)
 omega_1 = calcDihedral([1, 4, 6, 8], Coord)
 omega_2 = calcDihedral([8, 20, 22, 24], Coord)
 
+print(phi_init)
+print(psi_init)
+print(chi1_init)
+print(CH3_1_init)
 # initial values of angles being rotated have to be > 0? not sure why
 if (phi_init < 0):
     phi_init = phi_init + 360
@@ -163,7 +171,10 @@ if (psi_init < 0):
     psi_init = psi_init + 360
 if (chi1_init < 0):
     chi1_init = chi1_init + 360
-
+if (CH3_1_init < 0):
+    CH3_1_init = CH3_1_init + 360
+if (CH3_2_init < 0):
+    CH3_2_init = CH3_2_init + 360
 # Create list of atoms to move
 moveAtomID_phi = np.arange(phi_index[2] + 1, n_atoms)
 moveAtomID_psi = np.arange(psi_index[2] + 1, n_atoms)
@@ -181,6 +192,7 @@ delta_term_CH3_2 = np.pi * np.sign(CH3_2_init) * CH3_2_init / 180.0
 delta_term_end_CH3_1 = np.pi * np.sign(end_CH3_1_init) * end_CH3_1_init / 180.0
 delta_term_end_CH3_2 = np.pi * np.sign(end_CH3_2_init) * end_CH3_2_init / 180.0
 
+
 # get clash list that include side chain CH3 atoms
 ind0 = np.isin(clash_list[:, 0], moveAtomID_CH3_1)
 ind1 = np.isin(clash_list[:, 1], moveAtomID_CH3_1)
@@ -188,6 +200,9 @@ ind2 = np.isin(clash_list[:, 0], moveAtomID_CH3_2)
 ind3 = np.isin(clash_list[:, 1], moveAtomID_CH3_2)
 CH3_clash_list = clash_list[ind0 | ind1 | ind2 | ind3, :]
 CH3_radii_list = radii_2[ind0 | ind1 | ind2 | ind3]
+
+np.savetxt('CH3_clash_list_val.txt', CH3_clash_list, fmt='%i')
+np.savetxt('CH3_clash_list_radii2_sum_val.txt', CH3_radii_list, fmt='%4.2f')
 
 
 # get clash list that includes end H3 atoms
@@ -209,7 +224,6 @@ ind0 = sum_2 < radii_2                                                  # Compar
 s_r_6 = np.power(radii_2[ind0] / sum_2[ind0], 3)
 E = np.power(1 - s_r_6, 2)
 total_E = np.sum(E)
-
 min_E = 1000000
 
 
@@ -223,6 +237,7 @@ Initial_Position = Coord
 # Loop over all phi
 for phi_loop in range(0, 1):
     setPhi = phi_loop * 10.0
+    #setPhi = 10
     Pos_phi = rotate_DA(Initial_Position, setPhi, delta_term_phi, phi_index, moveAtomID_phi)
     print(setPhi)
     
@@ -237,13 +252,12 @@ for phi_loop in range(0, 1):
     for psi_loop in range(0, 36):
         setPsi = psi_loop * 10.0
         Pos_phi_psi = rotate_DA(Pos_phi, setPsi, delta_term_psi, psi_index, moveAtomID_psi)
-        print(setPsi)
 
         for chi1_loop in range(0, 36):
-            Position_ppc = Pos_phi_psi.copy()
-            Position_ppc[moveAtomID_chi1, :] = all_Chi_pos[chi1_loop]
-
             setChi = chi1_loop * 10.0
+            Position_ppc = Pos_phi_psi.copy()
+            Position_ppc[moveAtomID_chi1, :] = all_Chi_pos[int(setChi/10)]
+            
             total_E = 0
 
             # Now that we've rotated everything, check for clashes
@@ -266,7 +280,6 @@ for phi_loop in range(0, 1):
 
             # If so, rotate the SC CH3 groups
             if (total_E > 0 and (np.any(ind1) or np.any(ind2))):
-
                 min_E = total_E
                 # Rotate CH3 groups
                 [min_E, Position_CH3] = rotate_CH3(Position_ppc.copy(), delta_term_CH3_1, delta_term_CH3_2, CH3_1_index,
