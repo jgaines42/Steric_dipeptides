@@ -142,8 +142,6 @@ int main(int argc, char **argv){
 	float setPhi, setPsi, setChi1, setCH3_1, setCH3_2, E, minE, CH3_E;
 	float Pos_phi[n_atoms][3], Pos_psi[n_atoms][3], Pos_chi1[n_atoms][3], Pos_CH3_1[n_atoms][3], Pos_CH3_2[n_atoms][3];
 	float CH3_min[n_atoms][3];
-	float save_data[72 * 72][4];
-	int save_counter = 0;
 
 	//Clear output file
 	string n1, n2, n3, f1;
@@ -154,98 +152,77 @@ int main(int argc, char **argv){
 	ofstream out_file1(f1.c_str(), ios::out);
 	out_file1 << fixed;
 
-	for (int phi_loop = 0; phi_loop < 72; phi_loop++){					// loop over all phi values
+	setPhi = phi_init;
+	setPsi = psi_init;
 
-		// Rotate to the new phi value
-		setPhi = phi_loop * 5.0;
-		rotate_DA(Position, setPhi, delta_term_phi, phi_index, moveAtomID_phi, n_atoms, Pos_phi);
 
-		for (int psi_loop = 0; psi_loop < 72; psi_loop++){				// loop over all psi values
+	for (int chi1_loop =0; chi1_loop < 72; chi1_loop++ ){ 		// loop over all chi1 values
 
-			// Rotate to the new psi valu
-			setPsi = psi_loop * 5.0;
-			rotate_DA(Pos_phi, setPsi, delta_term_psi, psi_index, moveAtomID_psi, n_atoms, Pos_psi);
+		// Rotate to the new chi1 valu
+		setChi1 = chi1_loop * 5.0;
+		rotate_DA(Position, setChi1, delta_term_chi1, chi1_index, moveAtomID_chi1, n_atoms, Pos_chi1);
 
-			for (int chi1_loop =0; chi1_loop < 72; chi1_loop++ ){ 		// loop over all chi1 values
+		// Get energy
+		E = get_energy(Pos_chi1, radii2, clash_atom1, clash_atom2, clash_size);
 
-				// Rotate to the new chi1 valu
-				setChi1 = chi1_loop * 5.0;
-				rotate_DA(Pos_psi, setChi1, delta_term_chi1, chi1_index, moveAtomID_chi1, n_atoms, Pos_chi1);
+		// now we have to consider the terminal CH3 groups
+		// Get energy due to CH3 atoms
+		CH3_E = get_energy(Pos_chi1, CH3_radii2, CH3_clash_atom1, CH3_clash_atom2, CH3_clash_size);
+		
+		// If there is energy due to overlap of the CH3 hydrogens, rotate these extra dihedrals, finding the lowest energy configuration
+		if (CH3_E > 0){
 
-				// Get energy
-				E = get_energy(Pos_chi1, radii2, clash_atom1, clash_atom2, clash_size);
+			// Store the current coordinates in CH3_min
+			for (i = 0; i < n_atoms; i++){
+				CH3_min[i][0] = Pos_chi1[i][0];
+				CH3_min[i][1] = Pos_chi1[i][1];
+				CH3_min[i][2] = Pos_chi1[i][2];
+			}
 
-				// now we have to consider the terminal CH3 groups
-				// Get energy due to CH3 atoms
-				CH3_E = get_energy(Pos_chi1, CH3_radii2, CH3_clash_atom1, CH3_clash_atom2, CH3_clash_size);
+			minE = CH3_E;	// Lowest CH3 energy found so far
+
+			for (int CH3_1_loop = 0; CH3_1_loop < 72; CH3_1_loop++){		// Rotate first CH3 group
 				
-				// If there is energy due to overlap of the CH3 hydrogens, rotate these extra dihedrals, finding the lowest energy configuration
-				if (CH3_E > 0){
+				if (minE == 0){
+					break;
+				}
+				
+				setCH3_1 = CH3_1_loop * 5.0;
+				rotate_DA(Pos_chi1, setCH3_1, delta_term_CH3_1, CH3_1_index, moveAtomID_CH3_1, n_atoms, Pos_CH3_1);
 
-					// Store the current coordinates in CH3_min
-					for (i = 0; i < n_atoms; i++){
-						CH3_min[i][0] = Pos_chi1[i][0];
-						CH3_min[i][1] = Pos_chi1[i][1];
-						CH3_min[i][2] = Pos_chi1[i][2];
-					}
+				for (int CH3_2_loop = 0; CH3_2_loop < 72; CH3_2_loop++){	// Rotate second CH3 group
+					setCH3_2 = CH3_2_loop * 5.0;
+					rotate_DA(Pos_CH3_1, setCH3_2, delta_term_CH3_2, CH3_2_index, moveAtomID_CH3_2, n_atoms, Pos_CH3_2);
+					
+					// Calculate energy due to CH3 hydrogen atoms
+					CH3_E = get_energy(Pos_CH3_2, CH3_radii2, CH3_clash_atom1, CH3_clash_atom2, CH3_clash_size);
 
-					minE = CH3_E;	// Lowest CH3 energy found so far
-
-					for (int CH3_1_loop = 0; CH3_1_loop < 72; CH3_1_loop++){		// Rotate first CH3 group
-						
-						if (minE == 0){
+					// If we found a new minimum, store the energy and coordiantes
+					if (CH3_E < minE){
+						minE = CH3_E;
+						// copy array to CH3_min
+						for (i = 0; i < n_atoms; i++){
+							CH3_min[i][0] = Pos_CH3_2[i][0];
+							CH3_min[i][1] = Pos_CH3_2[i][1];
+							CH3_min[i][2] = Pos_CH3_2[i][2];
+						}
+						if (minE == 0){ 	// If the CH3 energy is 0, exit the loops
+							CH3_1_loop = 73;
+							CH3_2_loop = 73;
 							break;
 						}
-						
-						setCH3_1 = CH3_1_loop * 5.0;
-						rotate_DA(Pos_chi1, setCH3_1, delta_term_CH3_1, CH3_1_index, moveAtomID_CH3_1, n_atoms, Pos_CH3_1);
-
-						for (int CH3_2_loop = 0; CH3_2_loop < 72; CH3_2_loop++){	// Rotate second CH3 group
-							setCH3_2 = CH3_2_loop * 5.0;
-							rotate_DA(Pos_CH3_1, setCH3_2, delta_term_CH3_2, CH3_2_index, moveAtomID_CH3_2, n_atoms, Pos_CH3_2);
-							
-							// Calculate energy due to CH3 hydrogen atoms
-							CH3_E = get_energy(Pos_CH3_2, CH3_radii2, CH3_clash_atom1, CH3_clash_atom2, CH3_clash_size);
-
-							// If we found a new minimum, store the energy and coordiantes
-							if (CH3_E < minE){
-								minE = CH3_E;
-								// copy array to CH3_min
-								for (i = 0; i < n_atoms; i++){
-									CH3_min[i][0] = Pos_CH3_2[i][0];
-									CH3_min[i][1] = Pos_CH3_2[i][1];
-									CH3_min[i][2] = Pos_CH3_2[i][2];
-								}
-								if (minE == 0){ 	// If the CH3 energy is 0, exit the loops
-									CH3_1_loop = 73;
-									CH3_2_loop = 73;
-									break;
-								}
-							}
-						}
-
 					}
-					// Now that we've rotated and found the lowest energy CH3 configuration, calculate the full energy of the molecule
-					E = get_energy(CH3_min, radii2, clash_atom1, clash_atom2, clash_size);
 				}
-				
-				
-				// Save data
-				save_data[save_counter][0] = setPhi;
-				save_data[save_counter][1] = setPsi;
-				save_data[save_counter][2] = setChi1;
-				save_data[save_counter][3] = E;
-				save_counter = save_counter + 1;
-				if (save_counter >= 72 * 72){
-					for (i=0; i < save_counter; i ++){
-						out_file1 << save_data[i][0] << " " << save_data[i][1] << " " << save_data[i][2] << " " << save_data[i][3] << endl;
-					}
-					save_counter = 0;
-				}
-				
-			} // end chi 1 loop
-		} // end psi loop
-	} // end phi loop
+
+			}
+			// Now that we've rotated and found the lowest energy CH3 configuration, calculate the full energy of the molecule
+			E = get_energy(CH3_min, radii2, clash_atom1, clash_atom2, clash_size);
+		}
+		
+		// Save data
+		out_file1 << setPhi << " " << setPsi << " " << setChi1 << " " << E << endl;
+		
+	} // end chi 1 loop
 
 	out_file1.close();
 }
