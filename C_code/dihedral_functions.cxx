@@ -218,8 +218,10 @@ float get_energy(float Position[][3], float radii2[], int clash_atom1[], int cla
 
         // If distance^2 is less than (r1 + r2)^2, calculate the repulsive LJ energy
 		if (D1 < radii2[i]){
+
 			E3 = (radii2[i] / D1) * (radii2[i] / D1) * (radii2[i] / D1);
 			E1 = (1 - E3);
+            
 			E = E + E1*E1;
 		}
 	}
@@ -249,7 +251,7 @@ void load_clash_array(std::string clash_file, int clash_size, int clash_atom1[],
         myfile.close();
       }
     else{
-        cout << "problem with clash File" << endl;
+        cout << "problem with clash File " << clash_file << endl;
         exit(EXIT_FAILURE);
     }
 }

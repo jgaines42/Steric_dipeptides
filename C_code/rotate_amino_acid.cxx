@@ -85,12 +85,20 @@ int main(int argc, char **argv){
 		CH3_clash_size = 129;	// number of clashes involving terminal CH3 atoms (length of CH3_clash_list_val.txt)
 		n_atoms = 28;
 		n_chi = 1;
+		string clash_file = "Clash_list_val.txt";
+		string radii_file = "Clash_list_radii_sum_val.txt";
+		string clash_file_CH3 = "CH3_clash_list_val.txt";
+		string radii_file_CH3 = "CH3_clash_list_radii2_sum_val.txt";
 	}
 	else if (AA_name.compare("Ile") == 0){
 		clash_size = 381;
 		CH3_clash_size = 147;
 		n_atoms = 31;
 		n_chi = 2;
+		string clash_file = "Clash_list_ile.txt";
+		string radii_file = "Clash_list_radii_sum_ile.txt";
+		string clash_file_CH3 = "CH3_clash_list_ile.txt";
+		string radii_file_CH3 = "CH3_clash_list_radii2_sum_ile.txt";
 	}
 
 	
@@ -98,8 +106,6 @@ int main(int argc, char **argv){
 	// Load clash list file
 	int clash_atom1[clash_size], clash_atom2[clash_size]; 		// variables to hold atom indexes
 	float radii_sum[clash_size], radii2[clash_size];		// variables to hold sum of radii and (sum of radii)^2
-	string clash_file = "Clash_list_val.txt";
-	string radii_file = "Clash_list_radii_sum_val.txt";
 	load_clash_array(clash_file, clash_size, clash_atom1, clash_atom2);
 	load_radii_array(radii_file, clash_size, radii_sum);
 	
@@ -111,10 +117,9 @@ int main(int argc, char **argv){
 	// load CH3 clashlist file
 	int CH3_clash_atom1[CH3_clash_size], CH3_clash_atom2[CH3_clash_size];		// varables to hold atom indexes
 	float CH3_radii2[CH3_clash_size];											// holds (sum of radii)^2
-	clash_file = "CH3_clash_list_val.txt";
-	radii_file = "CH3_clash_list_radii2_sum_val.txt";
-	load_clash_array(clash_file, CH3_clash_size, CH3_clash_atom1, CH3_clash_atom2);
-	load_radii_array(radii_file, CH3_clash_size, CH3_radii2); // This radii is already squared
+
+	load_clash_array(clash_file_CH3, CH3_clash_size, CH3_clash_atom1, CH3_clash_atom2);
+	load_radii_array(radii_file_CH3, CH3_clash_size, CH3_radii2); // This radii is already squared
 
 	// Load coordinates
 	float Position[n_atoms][3];

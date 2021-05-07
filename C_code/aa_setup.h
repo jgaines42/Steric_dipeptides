@@ -23,6 +23,6 @@ void get_dihedral_indexes(std::string aa_name, int index_array[9][4]); //int* re
 
 //void get_dihedral_indexes(std::string aa_name, int index_array[9][4]);
 //int phi_index[], int psi_index[], int chi1_index[], int chi2_index[], int chi3_index[], int CH3_1_index[], int CH3_2_index[], int end_CH3_1_index[], int end_CH3_2_index[]
-void get_move_indexes(std::string aa_name, int moveAtomID_phi[], int moveAtomID_psi[], int moveAtomID_chi1[], int moveAtomID_chi2[], int moveAtomID_chi3[], int moveAtomID_CH3_1[], int moveAtomID_CH3_2[], int moveAtomID_end_CH3_1[], int moveAtomID_end_CH3_2[]);
+void get_move_indexes(std::string aa_name, int moveAtomID_phi[], int moveAtomID_psi[], int moveAtomID_chi1[], int moveAtomID_chi2[], int moveAtomID_chi3[], int moveAtomID_CH3_1[], int moveAtomID_CH3_2[], int moveAtomID_end_CH3_1[], int moveAtomID_end_CH3_2[], int moveAtomID_OH[]);
 
 #endif
